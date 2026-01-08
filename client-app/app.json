@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "client-app",
+    "slug": "client-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "mbs",
+    "splash": {
+      "image": "./assets/SampleLogo.jpeg",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/SampleLogo.jpeg",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.clientapp",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/SampleLogo.jpeg"
+    },
+    "plugins": [
+      "expo-router",
+      "@react-native-firebase/app"
+    ]
+  }
+}

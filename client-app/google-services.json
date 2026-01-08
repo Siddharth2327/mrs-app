@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "904014792818",
+    "project_id": "mrs-marketplace",
+    "storage_bucket": "mrs-marketplace.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:904014792818:android:b7250eccaa8eb5e1179aeb",
+        "android_client_info": {
+          "package_name": "com.anonymous.clientapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-myC5whpEHlekw_GEHxTg_sFB3kI2Krw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
