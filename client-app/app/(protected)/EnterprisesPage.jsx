@@ -4,12 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';  // ← Navigation ready
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import EnterprisesHeader from './components/Enterprisespage/EnterprisesHeader';
-import EnterprisesSearch from './components/Enterprisespage/EnterprisesSearch';
-import CategoryFilter from './components/Enterprisespage/CategoryFilter';
-import ProductCard from './components/Enterprisespage/ProductCard';
-import CartFooter from './components/Enterprisespage/CartFooter';
-import BottomNavigation from './components/Navigation/BottomNavigation';
+import EnterprisesHeader from '../components/Enterprisespage/EnterprisesHeader';
+import EnterprisesSearch from '../components/Enterprisespage/EnterprisesSearch';
+import CategoryFilter from '../components/Enterprisespage/CategoryFilter';
+import ProductCard from '../components/Enterprisespage/ProductCard';
+import CartFooter from '../components/Enterprisespage/CartFooter';
+import BottomNavigation from '../components/Navigation/BottomNavigation';
 
 export default function EnterprisesPage() {  // ← Better name
   const router = useRouter();

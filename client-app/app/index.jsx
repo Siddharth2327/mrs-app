@@ -7,7 +7,7 @@ import Header from './components/Homepage/Header';
 import DeliveryLocation from './components/Homepage/DeliveryLocation';
 import SearchBar from './components/Homepage/SearchBar';
 import ServiceCards from './components/Homepage/ServiceCards';
-import DiscountBanner from './components/Homepage/DiscountBanner';
+// import DiscountBanner from './components/Homepage/DiscountBanner';
 import QuickMaterials from './components/Homepage/QuickMaterials';
 import WhyChooseUs from './components/Homepage/WhyChooseUs';
 import RecentOrders from './components/Homepage/RecentOrders';
@@ -18,6 +18,7 @@ const HomePage = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       <Header />
+
       <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -25,12 +26,13 @@ const HomePage = () => {
         <DeliveryLocation />
         <SearchBar />
         <ServiceCards />
-        <DiscountBanner />
+        {/* <DiscountBanner /> */}
         <QuickMaterials />
         <WhyChooseUs />
         <RecentOrders />
         <View style={styles.bottomPadding} />
       </ScrollView>
+
       <BottomNavigation activeTab="Home" />
     </SafeAreaView>
   );
@@ -39,9 +41,9 @@ const HomePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',  
+    backgroundColor: '#F8FAFC',
   },
-  scrollView: {}, 
+  scrollView: {},
   bottomPadding: {
     height: 20,
   },

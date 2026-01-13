@@ -4,13 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import TransportHeader from './components/TransportPage/TransportHeader';
-import LocationInput from './components/TransportPage/LocationInput';
-import DistanceInfo from './components/TransportPage/DistanceInfo';
-import VehicleSelection from './components/TransportPage/VehicleSelection';
-import PaymentMethod from './components/TransportPage/PaymentMethod';
-import FareBreakdown from './components/TransportPage/FareBreakdown';
-import BottomNavigation from './components/Navigation/BottomNavigation';
+import TransportHeader from '../components/TransportPage/TransportHeader';
+import LocationInput from '../components/TransportPage/LocationInput';
+import DistanceInfo from '../components/TransportPage/DistanceInfo';
+import VehicleSelection from '../components/TransportPage/VehicleSelection';
+import PaymentMethod from '../components/TransportPage/PaymentMethod';
+import FareBreakdown from '../components/TransportPage/FareBreakdown';
+import BottomNavigation from '../components/Navigation/BottomNavigation';
 
 const { height } = Dimensions.get('window');
 

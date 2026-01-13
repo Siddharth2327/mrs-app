@@ -1,32 +1,41 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const Header = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.header}>
       {/* Logo + Company Name */}
       <View style={styles.leftContent}>
         <Image 
-          source={require('../../../assets/icon.png')}  // need to change logo
+          source={require('../../../assets/icon.png')}  // change logo if needed
           style={styles.logo}
           resizeMode="contain"
         />
         <View>
           <Text style={styles.companyName}>Riswana Transport</Text>
-          <Text style={styles.memberLabel}>Member</Text>
+          <Text style={styles.memberLabel}>Delivering Trust</Text>
         </View>
       </View>
 
       {/* Right Actions */}
       <View style={styles.headerRight}>
+        {/* Notification */}
         <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications-outline" size={24} color="#333" />
           <View style={styles.notificationBadge} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.memberButton}>
-          <Ionicons name="crown" size={20} color="#FF8C42" />
-          <Text style={styles.memberText}>Member</Text>
+
+        {/* Login Button */}
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={() => router.push('/auth')}
+        >
+          <Ionicons name="log-in-outline" size={18} color="#FF8C42" />
+          <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -49,7 +58,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 40,
-    marginRight: 12,  
+    marginRight: 12,
   },
   companyName: {
     fontSize: 18,
@@ -78,20 +87,20 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#FF8C42',
   },
-  memberButton: {
+  loginButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
     borderColor: '#FF8C42',
     borderRadius: 6,
   },
-  memberText: {
+  loginText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#FF8C42',
   },
 });
 

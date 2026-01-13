@@ -4,11 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import OrdersHeader from './components/OrdersPage/OrdersHeader';
-import OrdersLocation from './components/OrdersPage/OrdersLocation';
-import OrderFilterTabs from './components/OrdersPage/OrderFilterTabs';
-import OrderCard from './components/OrdersPage/OrderCard';
-import BottomNavigation from './components/Navigation/BottomNavigation';
+import OrdersHeader from "../components/OrdersPage/OrdersHeader"
+import OrdersLocation from '../components/OrdersPage/OrdersLocation';
+import OrderFilterTabs from '../components/OrdersPage/OrderFilterTabs';
+import OrderCard from '../components/OrdersPage/OrderCard';
+import BottomNavigation from '../components/Navigation/BottomNavigation';
 
 export default function OrdersPage() {
     const router = useRouter();

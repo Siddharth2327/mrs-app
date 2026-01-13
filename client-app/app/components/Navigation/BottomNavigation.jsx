@@ -1,32 +1,32 @@
-import React, {  useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router, usePathname} from 'expo-router';
+import { router, usePathname } from 'expo-router';
 
 const BottomNavigation = () => {
   const [activeTab, setActiveTab] = useState('Home');
-  const pathname = usePathname(); // reading the current pathname so that it stays in the current tab after reload
+  const pathname = usePathname(); // current route
 
   useEffect(() => {
-    if (pathname === '/' || pathname === '/index') setActiveTab('Home');
+    if (pathname === '/') setActiveTab('Home');
     else if (pathname === '/TransportPage') setActiveTab('Transports');
     else if (pathname === '/EnterprisesPage') setActiveTab('Enterprises');
     else if (pathname === '/OrdersPage') setActiveTab('Orders');
     else if (pathname === '/CartPage') setActiveTab('Cart');
   }, [pathname]);
 
-   const tabs = [
-    { id: 1, name: 'Home',        icon: 'home-outline',      activeIcon: 'home',        route: '/index' },
+  const tabs = [
+    { id: 1, name: 'Home',        icon: 'home-outline',      activeIcon: 'home',        route: '/' },
     { id: 2, name: 'Transports',  icon: 'car-outline',       activeIcon: 'car',         route: '/TransportPage' },
     { id: 3, name: 'Enterprises', icon: 'briefcase-outline', activeIcon: 'briefcase',   route: '/EnterprisesPage' },
     { id: 4, name: 'Orders',      icon: 'clipboard-outline', activeIcon: 'clipboard',   route: '/OrdersPage' },
-    { id: 5, name: 'Profile',     icon: 'person-outline',    activeIcon: 'person',      route: '/ProfilePage' }, 
+    { id: 5, name: 'Cart',        icon: 'cart-outline',      activeIcon: 'cart',        route: '/CartPage' },
   ];
 
   const handleTabPress = (tab) => {
     setActiveTab(tab.name);
     router.push(tab.route);
-  }; 
+  };
 
   return (
     <View style={styles.container}>
