@@ -4,24 +4,23 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-nati
 const CategoryFilter = ({ selectedCategory: externalSelected, onSelectCategory }) => {
   const [localSelected, setLocalSelected] = useState('All');
 
-  // Sync external state changes
   const selected = externalSelected || localSelected;
 
   const categories = [
-    'All',
-    'Sand',
-    'M-Sand', 
-    'P-Sand',
-    'Steel',
-    'Bricks',
-    'Cement',
-    'Tin Sheets',
+    { id: 'All', label: 'All', value: 'All' },
+    { id: 'sand', label: 'Sand', value: 'sand' },
+    { id: 'steel', label: 'Steel', value: 'steel' },
+    { id: 'cement', label: 'Cement', value: 'cement' },
+    { id: 'bricks', label: 'Bricks', value: 'brick' },
   ];
 
-  const handleSelect = useCallback((category) => {
-    setLocalSelected(category);
-    onSelectCategory?.(category);
-  }, [onSelectCategory]);
+  const handleSelect = useCallback(
+    (category) => {
+      setLocalSelected(category);
+      onSelectCategory?.(category);
+    },
+    [onSelectCategory]
+  );
 
   return (
     <View style={styles.container}>
@@ -33,22 +32,16 @@ const CategoryFilter = ({ selectedCategory: externalSelected, onSelectCategory }
       >
         {categories.map((category) => (
           <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryButton,
-              selected === category && styles.categoryButtonActive,
-            ]}
-            onPress={() => handleSelect(category)}
-            activeOpacity={0.8}
+            key={category.id}
+            style={[styles.categoryButton, selected === category.value && styles.categoryButtonActive]}
+            onPress={() => handleSelect(category.value)}
+            activeOpacity={0.7}
           >
             <Text
-              style={[
-                styles.categoryText,
-                selected === category && styles.categoryTextActive,
-              ]}
+              style={[styles.categoryText, selected === category.value && styles.categoryTextActive]}
               numberOfLines={1}
             >
-              {category}
+              {category.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -60,40 +53,34 @@ const CategoryFilter = ({ selectedCategory: externalSelected, onSelectCategory }
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 12,
-    paddingHorizontal: 4,
     backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#F1F5F9',
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     gap: 8,
   },
   categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: '#F1F5F9',
-    minWidth: 80,
+    minWidth: 70,
     alignItems: 'center',
     justifyContent: 'center',
   },
   categoryButtonActive: {
-    backgroundColor: '#3B82F6',
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#1E3A5F',
   },
   categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '500',
     color: '#64748B',
   },
   categoryTextActive: {
     color: 'white',
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });
 

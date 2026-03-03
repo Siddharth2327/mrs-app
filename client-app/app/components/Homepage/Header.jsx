@@ -2,16 +2,19 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import useAuthStore from '../../../store/authStore';
+import ProfileMenu from '../Navigation/ProfileMenu';
 
 const Header = () => {
   const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   return (
     <View style={styles.header}>
       {/* Logo + Company Name */}
       <View style={styles.leftContent}>
         <Image 
-          source={require('../../../assets/icon.png')}  // change logo if needed
+          source={require('../../../assets/EntLogo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -24,19 +27,23 @@ const Header = () => {
       {/* Right Actions */}
       <View style={styles.headerRight}>
         {/* Notification */}
-        <TouchableOpacity style={styles.notificationButton}>
+        {/* <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications-outline" size={24} color="#333" />
           <View style={styles.notificationBadge} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        {/* Login Button */}
-        <TouchableOpacity
-          style={styles.loginButton}
-          onPress={() => router.push('/auth')}
-        >
-          <Ionicons name="log-in-outline" size={18} color="#FF8C42" />
-          <Text style={styles.loginText}>Login</Text>
-        </TouchableOpacity>
+        {/* Conditionally render Login Button or Profile Menu */}
+        {isAuthenticated ? (
+          <ProfileMenu />
+        ) : (
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push('/auth')}
+          >
+            <Ionicons name="log-in-outline" size={18} color="#FF8C42" />
+            <Text style={styles.loginText}>Login</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -85,7 +92,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#FF8C42',
+    backgroundColor: '#1E3A5F',
   },
   loginButton: {
     flexDirection: 'row',
@@ -94,13 +101,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#FF8C42',
+    borderColor: '#1E3A5F',
     borderRadius: 6,
   },
   loginText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FF8C42',
+    color: '#1E3A5F',
   },
 });
 

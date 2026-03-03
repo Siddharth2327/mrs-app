@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, StyleSheet,  Dimensions } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Text, StyleSheet, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 import TransportHeader from '../components/TransportPage/TransportHeader';
 import LocationInput from '../components/TransportPage/LocationInput';
@@ -24,17 +24,17 @@ export default function TransportPage() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [showVehicles, setShowVehicles] = useState(false);
-  const mapRef = useRef(null);
-
-  const vehicles = [
-    { id: 1, name: 'Bike', emoji: '🏍️', capacity: '5 kg', time: '5 min', price: 686, pricePerKm: 8, baseFare: 30 },
-    { id: 2, name: 'Car', emoji: '🚗', capacity: '4 passengers', time: '8 min', price: 1064, pricePerKm: 12, baseFare: 80 },
-    { id: 3, name: '7 Seater', emoji: '🚐', capacity: '7 passengers', time: '10 min', price: 1462, pricePerKm: 16, baseFare: 150 },
-    { id: 4, name: '9 Seater', emoji: '🚌', capacity: '9 passengers', time: '12 min', price: 1676, pricePerKm: 18, baseFare: 200 },
-  ];
+  const router = useRouter();
+  
+  const [vehicles, setVehicles] = useState([
+    { id: 1, name: 'Bike', icon: 'bicycle-outline', capacity: '5 kg', time: '5 min', price: 686, pricePerKm: 8, baseFare: 30 },
+    { id: 2, name: 'Mini', icon: 'car-outline', capacity: '4 passengers', time: '8 min', price: 1064, pricePerKm: 12, baseFare: 80 },
+    { id: 3, name: 'Sedan', icon: 'car-sport-outline', capacity: '4 passengers', time: '10 min', price: 1262, pricePerKm: 14, baseFare: 120 },
+    { id: 4, name: 'SUV', icon: 'bus-outline', capacity: '7 passengers', time: '12 min', price: 1676, pricePerKm: 18, baseFare: 200 },
+  ]);
 
   const calculateDistance = (coord1, coord2) => {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const dLat = (coord2.latitude - coord1.latitude) * Math.PI / 180;
     const dLon = (coord2.longitude - coord1.longitude) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -48,19 +48,14 @@ export default function TransportPage() {
     if (pickupCoords && destCoords) {
       const dist = calculateDistance(pickupCoords, destCoords);
       setDistance(dist);
-      setDuration(Math.round(dist * 2)); // Mock: 2 min per km
+      setDuration(Math.round(dist * 2));
       setShowVehicles(true);
 
-      // Update vehicle prices based on distance
-      vehicles.forEach(vehicle => {
-        vehicle.price = vehicle.baseFare + (dist * vehicle.pricePerKm);
-      });
-
-      // Fit map to show both markers
-      mapRef.current?.fitToCoordinates([pickupCoords, destCoords], {
-        edgePadding: { top: 100, right: 50, bottom: 300, left: 50 },
-        animated: true,
-      });
+      const updatedVehicles = vehicles.map(vehicle => ({
+        ...vehicle,
+        price: vehicle.baseFare + (dist * vehicle.pricePerKm)
+      }));
+      setVehicles(updatedVehicles);
     } else {
       setShowVehicles(false);
     }
@@ -80,7 +75,8 @@ export default function TransportPage() {
     }
   };
 
-  const handleVehicleSelect = (vehicle) => {
+  const handleVehicleSelect = (vehicleId) => {
+    const vehicle = vehicles.find(v => v.id === vehicleId);
     setSelectedVehicle(vehicle);
   };
 
@@ -93,14 +89,13 @@ export default function TransportPage() {
       distance,
       price: selectedVehicle?.price,
     });
-    // Navigate to booking confirmation
   };
 
   const handleBack = () => {
     if (selectedVehicle) {
       setSelectedVehicle(null);
     } else {
-      console.log('Go back to home');
+      router.back();
     }
   };
 
@@ -110,102 +105,124 @@ export default function TransportPage() {
       
       <TransportHeader 
         onBack={handleBack}
-        subtitle={selectedVehicle ? 'Confirm & Pay' : 'Choose your vehicle'}
+        title={selectedVehicle ? 'Confirm Booking' : 'Book a Ride'}
       />
 
-      {/* Map */}
-      <View style={styles.mapContainer}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={{
-            latitude: 13.0827,
-            longitude: 80.2707,
-            latitudeDelta: 0.5,
-            longitudeDelta: 0.5,
-          }}
-        >
-          {pickupCoords && (
-            <Marker coordinate={pickupCoords} pinColor="green" />
-          )}
-          {destCoords && (
-            <Marker coordinate={destCoords} pinColor="red" />
-          )}
-          {pickupCoords && destCoords && (
-            <Polyline
-              coordinates={[pickupCoords, destCoords]}
-              strokeColor="#1E3A5F"
-              strokeWidth={3}
-            />
-          )}
-        </MapView>
-      </View>
-
-      {/* Content */}
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        {!selectedVehicle ? (
-          <>
-            <LocationInput
-              pickup={pickup}
-              destination={destination}
-              onPickupChange={setPickup}
-              onDestinationChange={setDestination}
-              onPickupSelect={handlePickupSelect}
-              onDestinationSelect={handleDestinationSelect}
-            />
-
-            {showVehicles && (
-              <>
-                <DistanceInfo distance={distance} duration={duration} />
-                <VehicleSelection 
-                  vehicles={vehicles} 
-                  onSelectVehicle={handleVehicleSelect}
-                />
-              </>
-            )}
-          </>
-        ) : (
-          <View style={styles.confirmContainer}>
-            <DistanceInfo distance={distance} duration={duration} />
-            
-            {/* Selected Vehicle */}
-            <View style={styles.selectedVehicleCard}>
-              <View style={styles.vehicleIconLarge}>
-                <Text style={styles.vehicleEmojiLarge}>{selectedVehicle.emoji}</Text>
-              </View>
-              <View style={styles.selectedVehicleInfo}>
-                <Text style={styles.selectedVehicleName}>{selectedVehicle.name}</Text>
-                <Text style={styles.selectedVehicleDetails}>
-                  {selectedVehicle.capacity} • {selectedVehicle.time}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setSelectedVehicle(null)}>
-                <Text style={styles.changeText}>Change</Text>
-              </TouchableOpacity>
+        {/* Map Container */}
+        <View style={styles.mapContainer}>
+          <View style={styles.mockMap}>
+            <View style={styles.mapOverlay}>
+              <Text style={styles.mapLabel}>Chennai</Text>
             </View>
 
-            <View style={styles.whiteCard}>
+            {pickupCoords && (
+              <View style={[styles.marker, styles.pickupMarker]}>
+                <View style={styles.markerDot} />
+              </View>
+            )}
+
+            {destCoords && (
+              <View style={[styles.marker, styles.destMarker]}>
+                <View style={[styles.markerDot, styles.destDot]} />
+              </View>
+            )}
+
+            {pickupCoords && destCoords && (
+              <View style={styles.routeLine} />
+            )}
+          </View>
+        </View>
+
+        <ScrollView 
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+        >
+          {!selectedVehicle ? (
+            <>
+              <LocationInput
+                pickup={pickup}
+                destination={destination}
+                onPickupChange={setPickup}
+                onDestinationChange={setDestination}
+                onPickupSelect={handlePickupSelect}
+                onDestinationSelect={handleDestinationSelect}
+              />
+
+              {showVehicles && distance && (
+                <>
+                  <DistanceInfo distance={distance} duration={duration} />
+                  <VehicleSelection 
+                    vehicles={vehicles} 
+                    onSelectVehicle={handleVehicleSelect}
+                  />
+                </>
+              )}
+            </>
+          ) : (
+            <View style={styles.confirmContainer}>
+              <View style={styles.tripSummary}>
+                <View style={styles.summaryRow}>
+                  <View style={styles.summaryDot} />
+                  <Text style={styles.summaryLabel}>Pickup</Text>
+                </View>
+                <Text style={styles.summaryValue} numberOfLines={1}>{pickup}</Text>
+                
+                <View style={styles.summaryDivider} />
+                
+                <View style={styles.summaryRow}>
+                  <View style={[styles.summaryDot, styles.summaryDotDest]} />
+                  <Text style={styles.summaryLabel}>Drop</Text>
+                </View>
+                <Text style={styles.summaryValue} numberOfLines={1}>{destination}</Text>
+              </View>
+
+              <DistanceInfo distance={distance} duration={duration} />
+              
+              <View style={styles.selectedVehicleCard}>
+                <View style={styles.vehicleHeader}>
+                  <Text style={styles.sectionTitle}>Selected Vehicle</Text>
+                  <TouchableOpacity onPress={() => setSelectedVehicle(null)}>
+                    <Text style={styles.changeBtn}>Change</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.vehicleRow}>
+                  <View style={styles.vehicleIconSmall}>
+                    <Text style={styles.vehicleText}>{selectedVehicle.name}</Text>
+                  </View>
+                  <View style={styles.vehicleDetails}>
+                    <Text style={styles.vehicleCapacity}>{selectedVehicle.capacity}</Text>
+                    <Text style={styles.vehicleTime}>{selectedVehicle.time} away</Text>
+                  </View>
+                  <Text style={styles.vehiclePrice}>₹{selectedVehicle.price}</Text>
+                </View>
+              </View>
+
               <PaymentMethod onSelectMethod={setPaymentMethod} />
+              
               <FareBreakdown 
                 baseFare={selectedVehicle.baseFare}
                 distance={distance}
                 pricePerKm={selectedVehicle.pricePerKm}
               />
+
+              <TouchableOpacity style={styles.bookButton} onPress={handleBooking}>
+                <Text style={styles.bookButtonText}>
+                  Confirm & Pay ₹{selectedVehicle?.price || 0}
+                </Text>
+              </TouchableOpacity>
             </View>
+          )}
 
-            <TouchableOpacity style={styles.bookButton} onPress={handleBooking}>
-              <Text style={styles.bookButtonText}>
-                Pay ₹{selectedVehicle.price} • Book {selectedVehicle.name}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.bottomPadding} />
-      </ScrollView>
+          <View style={styles.bottomPadding} />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <BottomNavigation activeTab="Transports" />
     </SafeAreaView>
@@ -215,79 +232,194 @@ export default function TransportPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#FFFFFF',
+  },
+  keyboardView: {
+    flex: 1,
   },
   mapContainer: {
-    height: height * 0.3,
+    height: height * 0.35,
     width: '100%',
+    backgroundColor: '#F8FAFC',
   },
-  map: {
+  mockMap: {
     flex: 1,
+    position: 'relative',
+    backgroundColor: '#E5E7EB',
+  },
+  mapOverlay: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    zIndex: 10,
+  },
+  mapLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1E3A5F',
+  },
+  marker: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+  },
+  pickupMarker: {
+    top: '25%',
+    left: '20%',
+  },
+  destMarker: {
+    top: '65%',
+    right: '20%',
+  },
+  markerDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  destDot: {
+    backgroundColor: '#EF4444',
+  },
+  routeLine: {
+    position: 'absolute',
+    top: '35%',
+    left: '30%',
+    width: 2,
+    height: '35%',
+    backgroundColor: '#1E3A5F',
+    opacity: 0.5,
   },
   content: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 100,
+  },
   confirmContainer: {
     paddingHorizontal: 16,
   },
-  selectedVehicleCard: {
+  tripSummary: {
+    backgroundColor: '#FFFFFF',
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 12,
-  },
-  vehicleIconLarge: {
-    width: 70,
-    height: 70,
-    borderRadius: 12,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  vehicleEmojiLarge: {
-    fontSize: 36,
-  },
-  selectedVehicleInfo: {
-    flex: 1,
-  },
-  selectedVehicleName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
     marginBottom: 4,
   },
-  selectedVehicleDetails: {
-    fontSize: 14,
-    color: '#666',
+  summaryDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    marginRight: 8,
   },
-  changeText: {
-    fontSize: 14,
+  summaryDotDest: {
+    backgroundColor: '#EF4444',
+  },
+  summaryLabel: {
+    fontSize: 11,
     fontWeight: '600',
-    color: '#5B8DEE',
+    color: '#64748B',
+    textTransform: 'uppercase',
   },
-  whiteCard: {
-    backgroundColor: '#fff',
+  summaryValue: {
+    fontSize: 13,
+    color: '#1E293B',
+    marginLeft: 16,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 8,
+  },
+  selectedVehicleCard: {
+    backgroundColor: '#FFFFFF',
     marginTop: 16,
-    padding: 16,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  vehicleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1E3A5F',
+    textTransform: 'uppercase',
+  },
+  changeBtn: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1E3A5F',
+  },
+  vehicleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  vehicleIconSmall: {
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  vehicleText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E3A5F',
+  },
+  vehicleDetails: {
+    flex: 1,
+  },
+  vehicleCapacity: {
+    fontSize: 12,
+    color: '#1E293B',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  vehicleTime: {
+    fontSize: 11,
+    color: '#64748B',
+  },
+  vehiclePrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E3A5F',
   },
   bookButton: {
     backgroundColor: '#1E3A5F',
     marginTop: 20,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 8,
     alignItems: 'center',
   },
   bookButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
+    color: '#FFFFFF',
   },
   bottomPadding: {
     height: 20,
   },
 });
-

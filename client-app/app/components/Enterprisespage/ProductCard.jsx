@@ -1,228 +1,288 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const ProductCard = ({ product, onAddToCart, onQuantityChange }) => {
-  const [quantity, setQuantity] = useState(product.initialQuantity || 0);
+const ProductCard = ({ product, onAddToCart, onQuantityChange, cartQuantity = 0 }) => {
+  const handleIncrement = () => {
+    onQuantityChange?.(product.id, cartQuantity + 1);
+  };
 
-  const handleIncrement = useCallback(() => {
-    const newQuantity = quantity + 1;
-    setQuantity(newQuantity);
-    onQuantityChange?.(product.id, newQuantity);
-  }, [quantity, product.id, onQuantityChange]);
-
-  const handleDecrement = useCallback(() => {
-    if (quantity > 0) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      onQuantityChange?.(product.id, newQuantity);
-    }
-  }, [quantity, product.id, onQuantityChange]);
-
-  const handleAddToCart = useCallback(() => {
-    onAddToCart?.(product);
-  }, [product, onAddToCart]);
-
-  const getIconComponent = () => {
-    const iconProps = {
-      size: 48,
-      color: product.iconColor || '#94A3B8',
-    };
-
-    switch (product.iconType) {
-      case 'circle':
-        return <View style={[styles.iconCircle, { backgroundColor: product.iconColor || '#F1F5F9' }]} />;
-      case 'cube':
-        return <View style={[styles.iconCube, { backgroundColor: product.iconColor || '#F1F5F9' }]} />;
-      case 'gear':
-        return <Ionicons name="settings-outline" {...iconProps} />;
-      default:
-        return <View style={[styles.iconDefault, { backgroundColor: product.iconColor || '#F1F5F9' }]} />;
+  const handleDecrement = () => {
+    if (cartQuantity > 0) {
+      onQuantityChange?.(product.id, cartQuantity - 1);
     }
   };
 
-  const discountPercentage = product.discount ? Math.round((product.discount / product.originalPrice) * 100) : 0;
+  const handleAddToCart = () => {
+    onAddToCart?.(product);
+  };
+
+  const getColorByType = (type) => {
+    const colors = {
+      sand: '#F4A460',
+      'm-sand': '#B0B0B0',
+      'p-sand': '#D8BFD8',
+      steel: '#778899',
+      bricks: '#CD5C5C',
+      cement: '#808080',
+    };
+    return colors[type?.toLowerCase()] || '#E2E8F0';
+  };
+
+  const getIconComponent = () => {
+    const iconType = product.iconType || product.type;
+    const iconColor = product.iconColor || getColorByType(product.type);
+
+    switch (iconType) {
+      case 'sand':
+        return <View style={[styles.iconCircle, { backgroundColor: '#F4A460' }]} />;
+      case 'm-sand':
+        return <View style={[styles.iconCube, { backgroundColor: '#B0B0B0' }]} />;
+      case 'p-sand':
+        return <View style={[styles.iconCircle, { backgroundColor: '#D8BFD8' }]} />;
+      case 'steel':
+        return <View style={[styles.iconGear, { backgroundColor: '#778899' }]} />;
+      case 'bricks':
+        return <View style={[styles.iconCube, { backgroundColor: '#CD5C5C' }]} />;
+      case 'cement':
+        return <View style={[styles.iconCube, { backgroundColor: '#808080' }]} />;
+      default:
+        return <View style={[styles.iconCircle, { backgroundColor: iconColor }]} />;
+    }
+  };
+
+  const hasDiscount =
+    product.originalPrice && product.originalPrice > product.price;
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.97}>
-      {product.discount && (
+    <View style={styles.card}>
+      {hasDiscount && (
         <View style={styles.discountBadge}>
-          <Text style={styles.discountText}>{discountPercentage}% OFF</Text>
+          <Text style={styles.discountText}>
+            Save ₹{product.originalPrice - product.price}
+          </Text>
         </View>
       )}
-      
-      <View style={styles.iconContainer}>
-        {getIconComponent()}
+
+      {/* Product Image */}
+      <View style={styles.imageContainer}>
+        {product.imageUrl ? (
+          <Image 
+            source={{ uri: product.imageUrl }} 
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.iconFallback}>{getIconComponent()}</View>
+        )}
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>{product.name}</Text>
-        <Text style={styles.description} numberOfLines={2}>{product.description}</Text>
+        {/* ✅ 2-Line Title */}
+        <Text style={styles.title} numberOfLines={2}>
+          {product.name}
+        </Text>
 
+        {/* ✅ Price Section */}
         <View style={styles.priceContainer}>
           <Text style={styles.price}>₹{product.price}</Text>
-          {product.originalPrice && (
-            <Text style={styles.originalPrice}>₹{product.originalPrice}</Text>
+          {hasDiscount && (
+            <Text style={styles.originalPrice}>
+              ₹{product.originalPrice}
+            </Text>
           )}
-          <Text style={styles.unit}>{product.unit}</Text>
+          <Text style={styles.unit}>/{product.unit}</Text>
         </View>
 
-        {quantity > 0 ? (
+        {/* ✅ Quantity / Add Button */}
+        {cartQuantity > 0 ? (
           <View style={styles.quantityContainer}>
             <TouchableOpacity
               style={styles.quantityButton}
               onPress={handleDecrement}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="remove" size={20} color="#1E293B" />
+              <Text style={styles.quantityButtonText}>−</Text>
             </TouchableOpacity>
-            <Text style={styles.quantityText}>{quantity}</Text>
+
+            <Text style={styles.quantityText}>{cartQuantity}</Text>
+
             <TouchableOpacity
               style={styles.quantityButton}
               onPress={handleIncrement}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="add" size={20} color="#1E293B" />
+              <Text style={styles.quantityButtonText}>+</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
-            <Ionicons name="add" size={18} color="#fff" />
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddToCart}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={14} color="#fff" />
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
         )}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginHorizontal: 4,
-    marginBottom: 16,
+    borderRadius: 10,
+    padding: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
+
   discountBadge: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 8,
+    right: 8,
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
     zIndex: 1,
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
+
   discountText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '600',
     color: '#92400E',
   },
-  iconContainer: {
-    width: 72,
-    height: 72,
+
+  imageContainer: {
+    width: '100%',
+    height: 80,
+    marginBottom: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#F8FAFC',
+  },
+
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  iconFallback: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
   },
+
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    opacity: 0.8,
   },
+
   iconCube: {
-    width: 52,
-    height: 52,
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    opacity: 0.8,
   },
-  iconDefault: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+
+  iconGear: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    opacity: 0.8,
   },
+
   content: {
     flex: 1,
   },
+
   title: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '700',
     color: '#1E293B',
     marginBottom: 6,
+    lineHeight: 16,
+    minHeight: 32, // keeps cards equal height
   },
-  description: {
-    fontSize: 14,
-    color: '#64748B',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
+
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginBottom: 20,
+    marginBottom: 10,
+    flexWrap: 'wrap',
   },
+
   price: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#1E293B',
-    marginRight: 12,
+    marginRight: 4,
   },
+
   originalPrice: {
-    fontSize: 16,
+    fontSize: 11,
     color: '#94A3B8',
     textDecorationLine: 'line-through',
+    marginRight: 4,
   },
+
   unit: {
-    fontSize: 14,
+    fontSize: 10,
     color: '#64748B',
-    marginLeft: 8,
   },
+
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: '#E8F0FE',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
+
   quantityButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 26,
+    height: 26,
+    borderRadius: 6,
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  quantityButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E3A5F',
+  },
+
   quantityText: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1E293B',
-    minWidth: 40,
   },
+
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 8,
+    backgroundColor: '#1E3A5F',
+    borderRadius: 6,
+    paddingVertical: 8,
+    gap: 4,
   },
+
   addButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '600',
     color: '#fff',
   },
 });

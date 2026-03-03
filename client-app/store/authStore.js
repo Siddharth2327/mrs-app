@@ -25,14 +25,14 @@ const useAuthStore = create(
         const unsubscribe = auth().onAuthStateChanged(async (firebaseUser) => {
           if (firebaseUser) {
             set({ user: firebaseUser, isAuthenticated: true });
-            
+
             // Fetch user data from Firestore
             try {
               const userDoc = await firestore()
                 .collection('users')
                 .doc(firebaseUser.uid)
                 .get();
-              
+
               if (userDoc.exists) {
                 set({ userData: userDoc.data() });
               }
@@ -53,17 +53,17 @@ const useAuthStore = create(
         try {
           const email = `${phone}@riswana.app`;
           const userCredential = await auth().signInWithEmailAndPassword(email, password);
-          
+
           // Fetch user data
           const userDoc = await firestore()
             .collection('users')
             .doc(userCredential.user.uid)
             .get();
-          
+
           if (userDoc.exists) {
             set({ userData: userDoc.data() });
           }
-          
+
           return { success: true };
         } catch (error) {
           console.error('Sign in error:', error);
@@ -72,27 +72,28 @@ const useAuthStore = create(
       },
 
       // Sign Up
-      signUp: async (name, phone, password) => {
+      signUp: async (name, phone, password, email = '') => {
         try {
-          const email = `${phone}@riswana.app`;
-          const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-          
+          const userEmail = email.trim() || `${phone}@riswana.app`;
+
+          const userCredential = await auth().createUserWithEmailAndPassword(userEmail, password);
+
           // Create user document in Firestore
           const userData = {
             name: name.trim(),
             phone: phone.trim(),
-            email: email,
+            email: userEmail,
+            role: 'member',
+            addresses: [],
             createdAt: firestore.FieldValue.serverTimestamp(),
-            membershipType: 'Member',
           };
-          
+
           await firestore()
             .collection('users')
             .doc(userCredential.user.uid)
             .set(userData);
-          
+
           set({ userData });
-          
           return { success: true };
         } catch (error) {
           console.error('Sign up error:', error);
@@ -123,11 +124,113 @@ const useAuthStore = create(
             .collection('users')
             .doc(user.uid)
             .update(updates);
-          
+
           set({ userData: { ...userData, ...updates } });
           return { success: true };
         } catch (error) {
           console.error('Update user data error:', error);
+          return { success: false, error };
+        }
+      },
+
+      // Get Default Address
+      getDefaultAddress: () => {
+        const { userData } = get();
+        if (!userData?.addresses) return null;
+        return userData.addresses.find(addr => addr.isDefault) || userData.addresses[0] || null;
+      },
+
+      // Add Address
+      addAddress: async (address) => {
+        const { user, userData } = get();
+        if (!user) return { success: false, error: 'No user logged in' };
+
+        try {
+          const newAddress = {
+            ...address,
+            id: Date.now().toString(),
+            isDefault: userData?.addresses?.length === 0,
+          };
+
+          const updatedAddresses = [...(userData?.addresses || []), newAddress];
+
+          await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .update({ addresses: updatedAddresses });
+
+          set({ userData: { ...userData, addresses: updatedAddresses } });
+          return { success: true, address: newAddress };
+        } catch (error) {
+          console.error('Add address error:', error);
+          return { success: false, error };
+        }
+      },
+
+      // Update Address
+      updateAddress: async (addressId, updates) => {
+        const { user, userData } = get();
+        if (!user) return { success: false, error: 'No user logged in' };
+
+        try {
+          const updatedAddresses = userData.addresses.map((addr) =>
+            addr.id === addressId ? { ...addr, ...updates } : addr
+          );
+
+          await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .update({ addresses: updatedAddresses });
+
+          set({ userData: { ...userData, addresses: updatedAddresses } });
+          return { success: true };
+        } catch (error) {
+          console.error('Update address error:', error);
+          return { success: false, error };
+        }
+      },
+
+      // Delete Address
+      deleteAddress: async (addressId) => {
+        const { user, userData } = get();
+        if (!user) return { success: false, error: 'No user logged in' };
+
+        try {
+          const updatedAddresses = userData.addresses.filter((addr) => addr.id !== addressId);
+
+          await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .update({ addresses: updatedAddresses });
+
+          set({ userData: { ...userData, addresses: updatedAddresses } });
+          return { success: true };
+        } catch (error) {
+          console.error('Delete address error:', error);
+          return { success: false, error };
+        }
+      },
+
+      // Set Default Address
+      setDefaultAddress: async (addressId) => {
+        const { user, userData } = get();
+        if (!user) return { success: false, error: 'No user logged in' };
+
+        try {
+          const updatedAddresses = userData.addresses.map((addr) => ({
+            ...addr,
+            isDefault: addr.id === addressId,
+          }));
+
+          await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .update({ addresses: updatedAddresses });
+
+          set({ userData: { ...userData, addresses: updatedAddresses } });
+          return { success: true };
+        } catch (error) {
+          console.error('Set default address error:', error);
           return { success: false, error };
         }
       },
@@ -145,7 +248,6 @@ const useAuthStore = create(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         userData: state.userData,
-        // Don't persist user object as it contains non-serializable data
       }),
     }
   )

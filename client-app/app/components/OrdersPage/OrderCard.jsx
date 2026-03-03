@@ -1,180 +1,293 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const OrderCard = ({ order, onPress }) => {
-  const router = useRouter();
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Delivered': return '#10B981';
-      case 'Dispatched': return '#F59E0B';
-      case 'Packed': return '#3B82F6';
-      case 'Placed': return '#6B7280';
-      default: return '#94A3B8';
-    }
+  const getStatusConfig = (status) => {
+    const configs = {
+      delivered: {
+        color: '#10B981',
+        gradient: ['#ECFDF5', '#FFFFFF'],
+        bgColor: '#ECFDF5',
+      },
+      dispatched: {
+        color: '#8B5CF6',
+        gradient: ['#F3E8FF', '#FFFFFF'],
+        bgColor: '#F3E8FF',
+      },
+      packed: {
+        color: '#F59E0B',
+        gradient: ['#FEF3C7', '#FFFFFF'],
+        bgColor: '#FEF3C7',
+      },
+      placed: {
+        color: '#3B82F6',
+        gradient: ['#EFF6FF', '#FFFFFF'],
+        bgColor: '#EFF6FF',
+      },
+    };
+
+    return configs[status?.toLowerCase()] || configs.placed;
   };
 
   const getIconName = (type) => {
     switch (type) {
       case 'transport': return 'car-outline';
-      case 'enterprise': return 'package-variant-outline';
-      case 'combined': return 'truck-outline';
-      default: return 'cube-outline';
+      case 'enterprise': return 'cube-outline';
+      case 'combined': return 'layers-outline';
+      default: return 'bag-outline';
     }
   };
 
+  // ✅ Updated Progress Logic
   const getProgressSteps = () => {
     const steps = ['Placed', 'Packed', 'Dispatched', 'Delivered'];
-    const currentIndex = steps.indexOf(order.status);
-    
+    const currentStatus = order.status || 'Placed';
+
+    const currentIndex = steps.findIndex(
+      s => s.toLowerCase() === currentStatus.toLowerCase()
+    );
+
     return steps.map((step, index) => ({
       label: step,
-      isCompleted: index < currentIndex,
-      isActive: index === currentIndex,
-      color: getStatusColor(step),
+      isCompleted: index <= currentIndex, // FIXED
+      color: getStatusConfig(step.toLowerCase()).color,
     }));
   };
 
   const progressSteps = getProgressSteps();
-  const statusColor = getStatusColor(order.status);
+  const statusConfig = getStatusConfig(order.status?.toLowerCase());
 
-  const handlePress = () => {
-    onPress?.(order);
-    router.push(`/orders/${order.id}`);
+  // Get material image if available
+  const getMaterialImage = () => {
+    if (order.materialImage) return order.materialImage;
+    if (order.materials?.[0]?.image) return order.materials[0].image;
+    if (order.image) return order.image;
+    return null;
   };
 
+  const materialImage = getMaterialImage();
+
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.95}>
-      <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: `${statusColor}10` }]}>
-          <Ionicons name={getIconName(order.type)} size={24} color={statusColor} />
+    <TouchableOpacity
+      style={styles.cardWrapper}
+      onPress={onPress}
+      activeOpacity={0.95}
+    >
+      <LinearGradient
+        colors={statusConfig.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          {materialImage ? (
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: materialImage }}
+                style={styles.materialImage}
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: 'rgba(255, 255, 255, 0.8)' },
+              ]}
+            >
+              <Ionicons
+                name={getIconName(order.type)}
+                size={22}
+                color={statusConfig.color}
+              />
+            </View>
+          )}
+
+          <View style={styles.headerContent}>
+            <Text style={styles.title} numberOfLines={1}>
+              {order.title ||
+                order.materials?.[0]?.name ||
+                order.materials?.[0] ||
+                'Order'}
+            </Text>
+
+            <Text style={styles.orderId}>
+              {order.id?.slice(0, 12) || 'MRS1234567'} •{' '}
+              {order.date ||
+                new Date(order.createdAt).toLocaleDateString(
+                  'en-GB',
+                  { day: 'numeric', month: 'short', year: 'numeric' }
+                )}
+            </Text>
+          </View>
+
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color="#94A3B8"
+          />
         </View>
-        <View style={styles.headerContent}>
-          <Text style={styles.title} numberOfLines={1}>{order.title}</Text>
-          <Text style={styles.orderId}>
-            {order.orderId} • {order.date}
+
+        {/* Status and Price */}
+        <View style={styles.statusContainer}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: statusConfig.bgColor },
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusText,
+                { color: statusConfig.color },
+              ]}
+            >
+              {order.status || 'Placed'}
+            </Text>
+          </View>
+
+          <Text style={styles.price}>
+            ₹{order.totalAmount || order.price || 0}
           </Text>
         </View>
-        <Ionicons name="chevron-forward" size={24} color="#94A3B8" />
-      </View>
 
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusBadge, { backgroundColor: `${statusColor}15`, borderColor: `${statusColor}30` }]}>
-          <Text style={[styles.statusText, { color: statusColor }]}>{order.status}</Text>
-        </View>
-        <Text style={styles.price}>₹{order.price.toLocaleString('en-IN')}</Text>
-      </View>
+        {/* Progress Tracker */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressTrack}>
+            {progressSteps.map((step, index) => (
+              <View key={index} style={styles.progressStepContainer}>
+                <View style={styles.progressStepWrapper}>
+                  <View
+                    style={[
+                      styles.progressDot,
+                      step.isCompleted && {
+                        backgroundColor: step.color,
+                        borderColor: step.color,
+                      },
+                    ]}
+                  >
+                    {step.isCompleted && (
+                      <Ionicons
+                        name="checkmark"
+                        size={10}
+                        color="white"
+                      />
+                    )}
+                  </View>
 
-      <View style={styles.progressContainer}>
-        <View style={styles.progressTrack}>
-          {progressSteps.map((step, index) => (
-            <View key={index} style={styles.progressStepContainer}>
-              <View style={styles.progressStepWrapper}>
-                <View
+                  {index < progressSteps.length - 1 && (
+                    <View
+                      style={[
+                        styles.progressLine,
+                        step.isCompleted && {
+                          backgroundColor: step.color,
+                        },
+                      ]}
+                    />
+                  )}
+                </View>
+
+                <Text
                   style={[
-                    styles.progressDot,
-                    step.isCompleted && { 
-                      backgroundColor: step.color,
-                      borderColor: step.color 
-                    },
-                    step.isActive && { 
-                      backgroundColor: 'white',
-                      borderColor: step.color,
-                      borderWidth: 3 
+                    styles.progressLabel,
+                    step.isCompleted && {
+                      color: step.color,
+                      fontWeight: '600',
                     },
                   ]}
                 >
-                  {step.isCompleted && (
-                    <Ionicons name="checkmark" size={12} color="white" />
-                  )}
-                </View>
-                {index < progressSteps.length - 1 && (
-                  <View
-                    style={[
-                      styles.progressLine,
-                      step.isCompleted && { backgroundColor: step.color },
-                    ]}
-                  />
-                )}
+                  {step.label}
+                </Text>
               </View>
-              <Text style={[
-                styles.progressLabel,
-                step.isCompleted && { color: step.color, fontWeight: '600' }
-              ]}>
-                {step.label}
-              </Text>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
+
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
 
+
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 20,
+  cardWrapper: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 14,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  card: {
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
+  },
+  imageContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  materialImage: {
+    width: '100%',
+    height: '100%',
   },
   headerContent: {
     flex: 1,
   },
   title: {
-    fontSize: 17,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#1E293B',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   orderId: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#64748B',
   },
   statusContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   statusBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
   },
   price: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#1E293B',
   },
   progressContainer: {
-    marginTop: 12,
+    marginTop: 8,
   },
   progressTrack: {
     flexDirection: 'row',
@@ -188,14 +301,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   progressDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: '#F1F5F9',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -203,16 +316,15 @@ const styles = StyleSheet.create({
   },
   progressLine: {
     position: 'absolute',
-    top: 12.5,
+    top: 10,
     left: '50%',
     right: '-50%',
-    height: 3,
+    height: 2,
     backgroundColor: '#E2E8F0',
-    borderRadius: 2,
     zIndex: 1,
   },
   progressLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#94A3B8',
     textAlign: 'center',
     fontWeight: '500',

@@ -27,7 +27,6 @@ const LocationInput = ({
   const [loadingPickup, setLoadingPickup] = useState(false);
   const [loadingDestination, setLoadingDestination] = useState(false);
 
-  // Debounced Nominatim API search
   const fetchLocationSuggestions = useCallback(async (query, setSuggestions, setLoading) => {
     if (!query || query.length < 2) {
       setSuggestions([]);
@@ -62,7 +61,6 @@ const LocationInput = ({
     }
   }, []);
 
-  // Debounced pickup search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (pickupFocused && pickup?.length > 1) {
@@ -75,7 +73,6 @@ const LocationInput = ({
     return () => clearTimeout(timer);
   }, [pickup, pickupFocused, fetchLocationSuggestions]);
 
-  // Debounced destination search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (destinationFocused && destination?.length > 1) {
@@ -113,59 +110,54 @@ const LocationInput = ({
       }}
       activeOpacity={0.7}
     >
-      <Ionicons name="location-outline" size={20} color="#3B82F6" />
-      <Text style={styles.suggestionText} numberOfLines={1}>
+      <View style={styles.suggestionIcon}>
+        <Ionicons name="location-outline" size={16} color="#64748B" />
+      </View>
+      <Text style={styles.suggestionText} numberOfLines={2}>
         {item.display_name}
       </Text>
-      <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputsContainer}>
-        {/* 🟢🔴 Dots + Line */}
-        <View style={styles.dotsContainer}>
-          <View style={styles.dotGreen} />
-          <View style={styles.connectingLine} />
-          <View style={styles.dotRed} />
+      <View style={styles.inputsWrapper}>
+        <View style={styles.dotsColumn}>
+          <View style={styles.dotPickup} />
+          <View style={styles.connectLine} />
+          <View style={styles.dotDest} />
         </View>
 
-        {/* Inputs */}
-        <View style={styles.inputs}>
-          {/* Pickup Input */}
+        <View style={styles.inputsColumn}>
           <View style={[
-            styles.inputWrapper, 
-            pickup && styles.inputWrapperFilled,
-            pickupFocused && styles.inputWrapperFocused
+            styles.inputBox,
+            pickupFocused && styles.inputBoxFocused
           ]}>
-            <Ionicons name="radio-button-on" size={20} color="#10B981" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Pickup location"
+              placeholderTextColor="#94A3B8"
               value={pickup}
               onChangeText={onPickupChange}
               onFocus={() => setPickupFocused(true)}
-              onBlur={() => setTimeout(() => setPickupFocused(false), 250)}
+              onBlur={() => setTimeout(() => setPickupFocused(false), 200)}
               autoCorrect={false}
               returnKeyType="next"
             />
           </View>
 
-          {/* Destination Input */}
           <View style={[
-            styles.inputWrapper, 
-            destination && styles.inputWrapperFilledRed,
-            destinationFocused && styles.inputWrapperFocusedRed
+            styles.inputBox,
+            destinationFocused && styles.inputBoxFocused
           ]}>
-            <Ionicons name="navigate" size={20} color="#EF4444" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Destination"
+              placeholder="Drop location"
+              placeholderTextColor="#94A3B8"
               value={destination}
               onChangeText={onDestinationChange}
               onFocus={() => setDestinationFocused(true)}
-              onBlur={() => setTimeout(() => setDestinationFocused(false), 250)}
+              onBlur={() => setTimeout(() => setDestinationFocused(false), 200)}
               autoCorrect={false}
               returnKeyType="search"
             />
@@ -173,33 +165,32 @@ const LocationInput = ({
         </View>
       </View>
 
-      {/* Pickup Suggestions */}
       {pickupFocused && pickupSuggestions.length > 0 && (
-        <FlatList
-          data={pickupSuggestions}
-          keyExtractor={(item, index) => `pickup-${item.lat}-${index}`}
-          renderItem={renderSuggestion}
-          style={styles.suggestionsList}
-          maxHeight={180}
-        />
+        <View style={styles.suggestionsContainer}>
+          <FlatList
+            data={pickupSuggestions}
+            keyExtractor={(item, index) => `pickup-${item.lat}-${index}`}
+            renderItem={renderSuggestion}
+            scrollEnabled={false}
+          />
+        </View>
       )}
 
-      {/* Destination Suggestions */}
       {destinationFocused && destinationSuggestions.length > 0 && (
-        <FlatList
-          data={destinationSuggestions}
-          keyExtractor={(item, index) => `dest-${item.lat}-${index}`}
-          renderItem={renderSuggestion}
-          style={styles.suggestionsList}
-          maxHeight={180}
-        />
+        <View style={styles.suggestionsContainer}>
+          <FlatList
+            data={destinationSuggestions}
+            keyExtractor={(item, index) => `dest-${item.lat}-${index}`}
+            renderItem={renderSuggestion}
+            scrollEnabled={false}
+          />
+        </View>
       )}
 
-      {/* Loading States */}
       {(loadingPickup || loadingDestination) && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#3B82F6" />
-          <Text style={styles.loadingText}>Finding locations...</Text>
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="small" color="#1E3A5F" />
+          <Text style={styles.loadingText}>Searching...</Text>
         </View>
       )}
     </View>
@@ -208,124 +199,101 @@ const LocationInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    marginTop: 20,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
   },
-  inputsContainer: {
+  inputsWrapper: {
     flexDirection: 'row',
   },
-  dotsContainer: {
+  dotsColumn: {
     alignItems: 'center',
-    marginRight: 16,
-    paddingTop: 20,
+    marginRight: 12,
+    paddingTop: 16,
   },
-  dotGreen: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  dotPickup: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#10B981',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  connectingLine: {
-    width: 3,
-    height: 48,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 2,
-    marginVertical: 6,
+  connectLine: {
+    width: 2,
+    height: 40,
+    backgroundColor: '#CBD5E1',
+    marginVertical: 4,
   },
-  dotRed: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  dotDest: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#EF4444',
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  inputs: {
+  inputsColumn: {
     flex: 1,
-    gap: 14,
+    gap: 10,
   },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  inputBox: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderWidth: 2,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
     borderColor: 'transparent',
   },
-  inputWrapperFilled: {
-    backgroundColor: '#ECFDF5',
-    borderColor: '#A7F3D0',
-  },
-  inputWrapperFilledRed: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FECACA',
-  },
-  inputWrapperFocused: {
-    borderColor: '#10B981',
-    backgroundColor: '#D1FAE5',
-  },
-  inputWrapperFocusedRed: {
-    borderColor: '#EF4444',
-    backgroundColor: '#FEE2E2',
-  },
-  inputIcon: {
-    marginRight: 12,
+  inputBoxFocused: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#1E3A5F',
   },
   input: {
-    flex: 1,
-    fontSize: 16,
+    fontSize: 13,
     color: '#1E293B',
     fontWeight: '500',
-    includeFontPadding: false,
+    padding: 0,
   },
-  suggestionsList: {
+  suggestionsContainer: {
     marginTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    paddingTop: 12,
+    paddingTop: 8,
   },
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 4,
-    gap: 12,
-    borderRadius: 10,
-    marginBottom: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    marginBottom: 2,
+  },
+  suggestionIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   suggestionText: {
-    fontSize: 15,
+    fontSize: 12,
     color: '#1E293B',
     flex: 1,
     fontWeight: '500',
   },
-  loadingContainer: {
+  loadingBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    gap: 12,
+    paddingVertical: 12,
+    gap: 8,
+    marginTop: 8,
   },
   loadingText: {
-    fontSize: 15,
+    fontSize: 12,
     color: '#64748B',
     fontWeight: '500',
   },

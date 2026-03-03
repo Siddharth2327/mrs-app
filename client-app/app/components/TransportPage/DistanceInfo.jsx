@@ -8,13 +8,13 @@ const DistanceInfo = ({ distance, duration }) => {
   return (
     <View style={styles.container}>
       <View style={styles.infoItem}>
-        <Ionicons name="git-compare-outline" size={20} color="#1E3A5F" />
+        <Ionicons name="navigate-outline" size={14} color="#64748B" />
         <Text style={styles.infoText}>{distance} km</Text>
       </View>
-      <View style={styles.separator} />
+      <View style={styles.divider} />
       <View style={styles.infoItem}>
-        <Ionicons name="time-outline" size={20} color="#1E3A5F" />
-        <Text style={styles.infoText}>~{duration} min</Text>
+        <Ionicons name="time-outline" size={14} color="#64748B" />
+        <Text style={styles.infoText}>{duration} min</Text>
       </View>
     </View>
   );
@@ -25,29 +25,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E8F0FE',
+    backgroundColor: '#F8FAFC',
     marginHorizontal: 16,
-    marginTop: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 5,
   },
   infoText: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#1E3A5F',
+    color: '#1E293B',
   },
-  separator: {
-    width: 2,
-    height: 20,
-    backgroundColor: '#1E3A5F',
-    marginHorizontal: 20,
-    opacity: 0.3,
+  divider: {
+    width: 1,
+    height: 14,
+    backgroundColor: '#CBD5E1',
+    marginHorizontal: 16,
   },
 });
 

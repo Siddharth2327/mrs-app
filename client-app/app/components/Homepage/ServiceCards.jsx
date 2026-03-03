@@ -1,95 +1,152 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';  // ✅ ADDED
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const ServiceCards = () => {
+  const transportAnim = useRef(new Animated.Value(0)).current;
+  const enterpriseAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.stagger(150, [
+      Animated.spring(transportAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.spring(enterpriseAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const createAnimatedStyle = (animValue) => ({
+    opacity: animValue,
+    transform: [
+      {
+        translateY: animValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [40, 0],
+        }),
+      },
+      {
+        scale: animValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.9, 1],
+        }),
+      },
+    ],
+  });
+
   return (
     <View style={styles.container}>
-      {/* 🚚 TRANSPORT CARD → /TransportPage */}
-      <Link href="/TransportPage" asChild style={styles.link}>
-        <View style={styles.card}>
+      {/* 🚚 TRANSPORT CARD */}
+      <AnimatedTouchable
+        style={[styles.cardWrapper, createAnimatedStyle(transportAnim)]}
+        onPress={() => router.push('/TransportPage')}
+        activeOpacity={0.9}
+      >
+        <LinearGradient
+          colors={['#E8F0FE', '#F8FAFC']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.card}
+        >
           <View style={[styles.iconContainer, styles.transportIcon]}>
-            <Ionicons name="car-outline" size={28} color="#3B82F6" />
+            <Ionicons name="car-outline" size={26} color="#1E3A5F" />
           </View>
+
           <View style={styles.cardContent}>
             <Text style={styles.cardTitle}>Transports</Text>
-            <Text style={styles.cardSubtitle}>
-              Book vehicles for local &amp; outstation trips
-            </Text>
+            <Text style={styles.cardSubtitle}>Book and Rent vehicles for local & outstation trips</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#94A3B8" />
-        </View>
-      </Link>
 
-      {/* 📦 ENTERPRISES CARD → /EnterprisesPage */}
-      <Link href="/EnterprisesPage" asChild style={styles.link}>
-        <View style={styles.card}>
+          <Ionicons name="chevron-forward" size={22} color="#94A3B8" />
+        </LinearGradient>
+      </AnimatedTouchable>
+
+      {/* 📦 ENTERPRISES CARD */}
+      <AnimatedTouchable
+        style={[styles.cardWrapper, createAnimatedStyle(enterpriseAnim)]}
+        onPress={() => router.push('/EnterprisesPage')}
+        activeOpacity={0.9}
+      >
+        <LinearGradient
+          colors={['#FEF3C7', '#F8FAFC']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.card}
+        >
           <View style={[styles.iconContainer, styles.enterpriseIcon]}>
-            <Ionicons name="business-outline" size={28} color="#F59E0B" />
+            <Ionicons name="business-outline" size={26} color="#92400E" />
           </View>
+
           <View style={styles.cardContent}>
             <Text style={styles.cardTitle}>Enterprises</Text>
-            <Text style={styles.cardSubtitle}>
-              Order construction materials with delivery
-            </Text>
+            <Text style={styles.cardSubtitle}>Order construction materials with delivery</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#94A3B8" />
-        </View>
-      </Link>
+
+          <Ionicons name="chevron-forward" size={22} color="#94A3B8" />
+        </LinearGradient>
+      </AnimatedTouchable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    gap: 16,
+    gap: 12,
   },
-  link: {
-    // Link styles (invisible wrapper)
+  cardWrapper: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
+    padding: 16,
   },
   iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 14,
   },
   transportIcon: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   enterpriseIcon: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   cardContent: {
     flex: 1,
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#1E293B',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   cardSubtitle: {
-    fontSize: 15,
+    fontSize: 13,
     color: '#64748B',
-    fontWeight: '500',
-    lineHeight: 22,
+    lineHeight: 18,
   },
 });
 

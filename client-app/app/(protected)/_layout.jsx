@@ -1,7 +1,7 @@
-import { Stack, useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import useAuthStore from '../../store/_authStore';
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
+import useAuthStore from "../../store/authStore";
 
 export default function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -9,13 +9,13 @@ export default function ProtectedLayout() {
   const router = useRouter();
 
   useEffect(() => {
-    // Only redirect when loading is complete and user is not authenticated
+    // Redirect to auth screen if not authenticated
     if (!isLoading && !isAuthenticated) {
-      router.replace('/auth');
+      router.replace("/auth");
     }
   }, [isAuthenticated, isLoading]);
 
-  // Show loading spinner while checking authentication
+  // Show loading spinner while checking auth
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -24,26 +24,20 @@ export default function ProtectedLayout() {
     );
   }
 
-  // Don't render protected content if not authenticated
+  // Prevent rendering protected routes if not authenticated
   if (!isAuthenticated) {
     return null;
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="CartPage" />
-      <Stack.Screen name="EnterprisesPage" />
-      <Stack.Screen name="OrdersPage" />
-      <Stack.Screen name="TransportPage" />
-    </Stack>
-  );
+  // Let Expo Router auto-handle all nested routes
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
   },
 });

@@ -6,29 +6,23 @@ const CartFooter = ({ itemCount, totalPrice, onViewCart }) => {
   if (itemCount === 0) return null;
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-    }).format(price);
+    return `₹${price}`;
   };
 
   return (
-    <TouchableOpacity 
-      style={styles.container} 
-      onPress={onViewCart}
-      activeOpacity={0.9}
-    >
+    <TouchableOpacity style={styles.container} onPress={onViewCart} activeOpacity={0.9}>
       <View style={styles.leftSection}>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{itemCount}</Text>
         </View>
-        <Text style={styles.itemsText}>{itemCount} {itemCount === 1 ? 'item' : 'items'}</Text>
+        <Text style={styles.itemsText}>
+          {itemCount} {itemCount === 1 ? 'item' : 'items'}
+        </Text>
       </View>
-      
+
       <View style={styles.rightSection}>
         <Text style={styles.priceText}>{formatPrice(totalPrice)}</Text>
-        <Ionicons name="arrow-forward" size={20} color="#fff" />
+        <Ionicons name="arrow-forward" size={18} color="#fff" />
       </View>
     </TouchableOpacity>
   );
@@ -37,53 +31,53 @@ const CartFooter = ({ itemCount, totalPrice, onViewCart }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 80,              // ← Perfect above bottom nav
-    left: 20,
-    right: 20,
+    bottom: 95,
+    left: 16,
+    right: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#1E3A5F',
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 24,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   badge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#F59E0B',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   badgeText: {
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '700',
     color: '#fff',
   },
   itemsText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
     color: '#E2E8F0',
   },
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   priceText: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#fff',
   },
 });

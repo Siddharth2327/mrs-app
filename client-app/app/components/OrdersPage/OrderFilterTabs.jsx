@@ -1,14 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const OrderFilterTabs = ({ activeFilter: externalActiveFilter, onFilterChange }) => {
   const [localActiveTab, setLocalActiveTab] = useState('All');
   
-  // Sync with parent state
   const activeTab = externalActiveFilter || localActiveTab;
 
-  const tabs = ['All', 'Transport', 'Enterprise', 'Combined'];
+  const tabs = ['All', 'Transport', 'Enterprise'];
 
   const handleTabPress = useCallback((tab) => {
     setLocalActiveTab(tab);
@@ -16,13 +15,16 @@ const OrderFilterTabs = ({ activeFilter: externalActiveFilter, onFilterChange })
   }, [onFilterChange]);
 
   const handleFilterPress = useCallback(() => {
-    // TODO: Open status filter modal (Placed/Packed/Dispatched/Delivered)
     console.log('Open advanced filters');
   }, []);
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabsContainer}>
+      <ScrollView 
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabsContainer}
+      >
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab}
@@ -31,7 +33,7 @@ const OrderFilterTabs = ({ activeFilter: externalActiveFilter, onFilterChange })
               activeTab === tab && styles.tabActive,
             ]}
             onPress={() => handleTabPress(tab)}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <Text
               style={[
@@ -44,15 +46,14 @@ const OrderFilterTabs = ({ activeFilter: externalActiveFilter, onFilterChange })
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
       
       <TouchableOpacity 
         style={styles.filterButton}
         onPress={handleFilterPress}
         activeOpacity={0.7}
       >
-        <Ionicons name="filter-outline" size={20} color="#64748B" />
-        <View style={styles.filterBadge} />
+        <Ionicons name="funnel-outline" size={18} color="#64748B" />
       </TouchableOpacity>
     </View>
   );
@@ -63,36 +64,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 12,
+    paddingLeft: 16,
+    paddingRight: 16,
     backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#F1F5F9',
   },
   tabsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    flex: 1,
+    paddingRight: 12,
+    gap: 8,
   },
   tab: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: '#F1F5F9',
-    minWidth: 85,
+    minWidth: 75,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabActive: {
-    backgroundColor: '#3B82F6',
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#1E3A5F',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: '#64748B',
   },
@@ -101,22 +97,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   filterButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
-  },
-  filterBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#EF4444',
   },
 });
 

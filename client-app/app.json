@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "client-app",
+    "name": "Riswana Transport",
     "slug": "client-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/EntLogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "mbs",
     "splash": {
-      "image": "./assets/SampleLogo.jpeg",
+      "image": "./assets/EntLogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/SampleLogo.jpeg",
+        "foregroundImage": "./assets/EntLogo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -26,11 +26,17 @@
       "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "favicon": "./assets/SampleLogo.jpeg"
+      "favicon": "./assets/EntLogo.png"
     },
     "plugins": [
       "expo-router",
       "@react-native-firebase/app"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c2f18dd8-bf89-4a20-aa05-fbe03fbf1489"
+      }
+    }
   }
 }
